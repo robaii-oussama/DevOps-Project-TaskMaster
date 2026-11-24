@@ -58,7 +58,26 @@ jobs:
           DB_NAME: taskdb
           DB_USER: postgres
           DB_PASS: secretpassword
-        run: pytest
+        run: python -m pytest --cov=app --cov-report=term --cov-report=xml:coverage.xml
+
+      - name: Analyser le code avec SonarQube Cloud
+        if: >-
+          matrix.python-version == '3.12' &&
+          (github.ref == 'refs/heads/main' ||
+           (github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository))
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >-
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.sources=app.py
+            -Dsonar.tests=test_app.py
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.qualitygate.wait=true
+
 
   build-scan-push:
     runs-on: ubuntu-latest
