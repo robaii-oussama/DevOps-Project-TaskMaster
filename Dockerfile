@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 
 FROM python:3.12-alpine AS production
+RUN apk add --no-cache --upgrade krb5-libs
 
 COPY --from=builder /opt/venv /opt/venv
 
